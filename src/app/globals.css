@@ -8,14 +8,15 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
   --color-white: #FFFFFF;
+  --color-primary: #181a20;
+  --color-secondary: #717171;
+  --color-bg-secondary: #f7f7f7;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #F7F7F7;
+    --background: #FFFFFF;
     --foreground: #ededed;
   }
 }
@@ -23,5 +24,4 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

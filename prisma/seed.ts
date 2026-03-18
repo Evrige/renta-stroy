@@ -4,6 +4,7 @@ import {
 	ListingType,
 	PrismaClient,
 	PropertyStatus,
+	PropertyType,
 	RentPeriod,
 	RequestStatus,
 	RequestType,
@@ -22,6 +23,17 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+	await prisma.transaction.deleteMany();
+	await prisma.message.deleteMany();
+	await prisma.review.deleteMany();
+	await prisma.favorite.deleteMany();
+	await prisma.request.deleteMany();
+	await prisma.propertyImage.deleteMany();
+	await prisma.property.deleteMany();
+	await prisma.location.deleteMany();
+	await prisma.user.deleteMany();
+	
+
 	console.log("Seeding...");
 
 	const admin = await prisma.user.upsert({
@@ -83,12 +95,49 @@ async function main() {
 		},
 	});
 
-	const rentProperty = await prisma.property.create({
+	const location3 = await prisma.location.create({
+		data: {
+			country: "Ukraine",
+			city: "Kyiv",
+			district: "Pecherskyi",
+			street: "Lesi Ukrainky Blvd",
+			building: "7",
+			latitude: 50.4266,
+			longitude: 30.5381,
+		},
+	});
+
+	const location4 = await prisma.location.create({
+		data: {
+			country: "Ukraine",
+			city: "Lviv",
+			district: "Halytskyi",
+			street: "Shevchenka Street",
+			building: "102",
+			latitude: 49.8397,
+			longitude: 24.0297,
+		},
+	});
+
+	const location5 = await prisma.location.create({
+		data: {
+			country: "Ukraine",
+			city: "Odesa",
+			district: "Prymorskyi",
+			street: "Deribasivska Street",
+			building: "21",
+			latitude: 46.4825,
+			longitude: 30.7233,
+		},
+	});
+
+	const rentApartment = await prisma.property.create({
 		data: {
 			title: "2-room apartment in city center",
 			slug: "2-room-apartment-city-center",
 			description: "Modern furnished apartment for monthly rent in the center of Dnipro.",
 			listingType: ListingType.RENT,
+			propertyType: PropertyType.APARTMENT,
 			rentPeriod: RentPeriod.MONTHLY,
 			price: "18000",
 			area: "64.5",
@@ -118,12 +167,13 @@ async function main() {
 		},
 	});
 
-	const saleProperty = await prisma.property.create({
+	const saleCommercial = await prisma.property.create({
 		data: {
 			title: "Commercial property for sale",
 			slug: "commercial-property-for-sale",
 			description: "Commercial property suitable for office or retail business.",
 			listingType: ListingType.SALE,
+			propertyType: PropertyType.COMMERCIAL,
 			price: "125000",
 			area: "145.0",
 			rooms: 5,
@@ -147,13 +197,112 @@ async function main() {
 		},
 	});
 
+	const saleHouse = await prisma.property.create({
+		data: {
+			title: "Modern family house with garden",
+			slug: "modern-family-house-with-garden",
+			description: "Spacious modern house with garage, garden and terrace in Kyiv.",
+			listingType: ListingType.SALE,
+			propertyType: PropertyType.HOUSE,
+			price: "285000",
+			area: "220.0",
+			rooms: 6,
+			totalFloors: 2,
+			bathrooms: 3,
+			parking: true,
+			furnished: true,
+			status: PropertyStatus.AVAILABLE,
+			managerId: manager.id,
+			locationId: location3.id,
+			images: {
+				create: [
+					{
+						url: "/images/house-1.jpg",
+						alt: "House front view",
+						isMain: true,
+					},
+					{
+						url: "/images/house-2.jpg",
+						alt: "House terrace",
+						isMain: false,
+					},
+				],
+			},
+		},
+	});
+
+	const rentApartmentDaily = await prisma.property.create({
+		data: {
+			title: "Cozy studio apartment for daily rent",
+			slug: "cozy-studio-apartment-daily-rent",
+			description: "Small but cozy studio apartment in Lviv for short stays.",
+			listingType: ListingType.RENT,
+			propertyType: PropertyType.APARTMENT,
+			rentPeriod: RentPeriod.DAILY,
+			price: "2200",
+			area: "38.0",
+			rooms: 1,
+			floor: 3,
+			totalFloors: 6,
+			bathrooms: 1,
+			parking: false,
+			furnished: true,
+			status: PropertyStatus.AVAILABLE,
+			managerId: manager.id,
+			locationId: location4.id,
+			images: {
+				create: [
+					{
+						url: "/images/studio-1.jpg",
+						alt: "Studio interior",
+						isMain: true,
+					},
+				],
+			},
+		},
+	});
+
+	const saleMall = await prisma.property.create({
+		data: {
+			title: "Shopping mall building in Odesa",
+			slug: "shopping-mall-building-odesa",
+			description: "Large shopping center building with multiple retail spaces and parking.",
+			listingType: ListingType.SALE,
+			propertyType: PropertyType.MALL,
+			price: "950000",
+			area: "1800.0",
+			rooms: 20,
+			totalFloors: 4,
+			bathrooms: 8,
+			parking: true,
+			furnished: false,
+			status: PropertyStatus.AVAILABLE,
+			managerId: manager.id,
+			locationId: location5.id,
+			images: {
+				create: [
+					{
+						url: "/images/mall-1.jpg",
+						alt: "Mall exterior",
+						isMain: true,
+					},
+					{
+						url: "/images/mall-2.jpg",
+						alt: "Mall interior",
+						isMain: false,
+					},
+				],
+			},
+		},
+	});
+
 	await prisma.request.create({
 		data: {
 			type: RequestType.RENT,
 			message: "I want to rent this apartment for a long term.",
 			status: RequestStatus.PENDING,
 			userId: user.id,
-			propertyId: rentProperty.id,
+			propertyId: rentApartment.id,
 		},
 	});
 
@@ -163,21 +312,38 @@ async function main() {
 			message: "I am interested in buying this commercial property.",
 			status: RequestStatus.IN_PROGRESS,
 			userId: user.id,
-			propertyId: saleProperty.id,
+			propertyId: saleCommercial.id,
+		},
+	});
+
+	await prisma.request.create({
+		data: {
+			type: RequestType.VIEWING,
+			message: "Can I schedule a viewing for this house next week?",
+			status: RequestStatus.PENDING,
+			userId: user.id,
+			propertyId: saleHouse.id,
 		},
 	});
 
 	await prisma.favorite.create({
 		data: {
 			userId: user.id,
-			propertyId: rentProperty.id,
+			propertyId: rentApartment.id,
 		},
 	});
 
 	await prisma.favorite.create({
 		data: {
 			userId: user.id,
-			propertyId: saleProperty.id,
+			propertyId: saleCommercial.id,
+		},
+	});
+
+	await prisma.favorite.create({
+		data: {
+			userId: user.id,
+			propertyId: saleHouse.id,
 		},
 	});
 
@@ -186,7 +352,16 @@ async function main() {
 			rating: 5,
 			comment: "Great apartment and very good location.",
 			userId: user.id,
-			propertyId: rentProperty.id,
+			propertyId: rentApartment.id,
+		},
+	});
+
+	await prisma.review.create({
+		data: {
+			rating: 4,
+			comment: "Very promising property for business.",
+			userId: user.id,
+			propertyId: saleCommercial.id,
 		},
 	});
 
@@ -213,7 +388,7 @@ async function main() {
 			price: "18000",
 			startDate: new Date("2026-03-10"),
 			endDate: new Date("2026-04-10"),
-			propertyId: rentProperty.id,
+			propertyId: rentApartment.id,
 			buyerId: user.id,
 			sellerId: manager.id,
 		},
@@ -223,8 +398,11 @@ async function main() {
 		admin,
 		manager,
 		user,
-		rentProperty,
-		saleProperty,
+		rentApartment,
+		saleCommercial,
+		saleHouse,
+		rentApartmentDaily,
+		saleMall,
 	});
 }
 

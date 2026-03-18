@@ -3,18 +3,18 @@ import { ROUTES } from "./routes";
 export const NAV_ITEMS = [
 	{
 		href: ROUTES.HOME,
-		label: "Главная",
+		label: "Головна",
 	},
 	{
 		href: ROUTES.PROPERTIES,
-		label: "Недвижимость",
+		label: "Нерухомість",
 	},
 	{
 		href: ROUTES.ABOUT,
-		label: "О компании",
+		label: "Про компанію",
 	},
 	{
 		href: ROUTES.CONTACTS,
-		label: "Контакты",
+		label: "Контакти",
 	},
 ] as const;

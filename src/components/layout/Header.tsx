@@ -6,8 +6,8 @@ import Image from "next/image";
 
 export function Header() {
 	return (
-		<header className="">
-			<Container className="flex items-center justify-between py-2 bg-amber-200">
+		<header className="absolute top-0 left-0 z-50 w-full">
+			<Container className="flex items-center justify-between py-2 ">
 				<Link
 					href={ROUTES.HOME}
 				>
@@ -25,7 +25,7 @@ export function Header() {
 						<Link
 							key={item.href}
 							href={item.href}
-							className="text-lg font-medium text-white border-b-2 border-transparent hover:border-white transition pb-2"
+							className="text-lg text-primary font-medium border-b-2 border-transparent hover:border-primary transition pb-2"
 						>
 							{item.label}
 						</Link>
