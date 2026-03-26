@@ -4,7 +4,9 @@ import {Container} from "@/components/layout/Container";
 import Image from "next/image";
 import {BedDouble, Heart, LandPlot, SquareArrowOutUpRight, SquaresExclude} from "lucide-react";
 import {getRoomsLabel} from "@/app/utils/getRoomsLabel";
-import {formatListingType, formatRentPeriod} from "@/app/utils/formatters";
+import {formatListingType, formatPrice, formatRentPeriod} from "@/app/utils/formatters";
+import Link from "next/link";
+import {ROUTES} from "@/lib/constants/routes";
 
 const Page = async () => {
 	const properties = await prisma.property.findMany({
@@ -40,12 +42,13 @@ const Page = async () => {
 		},
 	});
 	return (
-			<Container className="grid grid-cols-4 gap-4">
-				{properties.map((property)=> (
-					<div key={property.id} className="rounded-xl rounded-t-lg border border-gray-300">
+		<Container className="grid grid-cols-4 gap-4">
+			{properties.map((property) => (
+				<Link key={property.id} href={`${ROUTES.PROPERTY_DETAILS(property.slug)}`}>
+					<div className="rounded-xl rounded-t-lg border border-gray-300">
 						<Image
-							// src={property.images[0]?.url}
-							src="/images/test.png"
+							src={property.images[0]?.url}
+							// src="/images/test.png"
 							width={200}
 							height={200}
 							alt={property.title}
@@ -59,11 +62,11 @@ const Page = async () => {
 							</p>
 							<div className="flex gap-2 border-b border-gray-200 pb-5">
 								<div className="flex items-center gap-1 text-primary text-sm">
-									<BedDouble size={20} color="#181a20" />
+									<BedDouble size={20} color="#181a20"/>
 									<span>{property.rooms} {getRoomsLabel(property.rooms || 0)}</span>
 								</div>
 								<div className="flex items-center gap-1 text-primary text-sm">
-									<LandPlot size={20} color="#181a20" />
+									<LandPlot size={20} color="#181a20"/>
 									<span>{property.area.toString()} m<sup>2</sup></span>
 								</div>
 							</div>
@@ -74,18 +77,19 @@ const Page = async () => {
 										formatListingType(property.listingType)}
 								</span>
 								<div className="flex gap-3">
-									<SquareArrowOutUpRight size={20} color="#181a20" />
-									<Heart size={20} color="#181a20" />
-									<SquaresExclude size={20} color="#181a20" />
+									<SquareArrowOutUpRight size={20} color="#181a20"/>
+									<Heart size={20} color="#181a20"/>
+									<SquaresExclude size={20} color="#181a20"/>
 								</div>
 							</div>
 							<p className="absolute font-bold -mt-13 bg-white rounded-lg py-1 px-2 text-primary">
-								{Number(property.price).toLocaleString("uk-UA")} грн
+								{formatPrice(property.price)} грн
 							</p>
 						</div>
 					</div>
-				))}
-			</Container>
+				</Link>
+			))}
+		</Container>
 	);
 };
 

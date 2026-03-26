@@ -1,6 +1,8 @@
 // 🔥 Универсальный файл для форматирования enum → текст
 
 // ================= USER =================
+import {Decimal} from "@prisma/client-runtime-utils";
+
 export const formatUserRole = (role: string) => {
 	switch (role) {
 		case "ADMIN":
@@ -133,4 +135,16 @@ export const formatTransactionStatus = (status: string) => {
 		default:
 			return status;
 	}
+};
+
+export const formatPrice = (price: Decimal) => Number(price).toLocaleString("uk-UA")
+
+export const formatDate = (date: Date | string) => {
+	const formatted = new Intl.DateTimeFormat("uk-UA", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	}).format(new Date(date));
+
+	return formatted.replace(" р.", "");
 };

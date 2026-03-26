@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
 	ListingType,
+	type Prisma,
 	PrismaClient,
 	PropertyStatus,
 	PropertyType,
@@ -22,6 +23,884 @@ if (!connectionString) {
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
+type LocationSeed = Prisma.LocationCreateInput & {
+	key: string;
+};
+
+type PropertySeed = {
+	title: string;
+	slug: string;
+	description: string;
+	listingType: ListingType;
+	propertyType: PropertyType;
+	rentPeriod?: RentPeriod;
+	price: string;
+	area: string;
+	rooms?: number;
+	floor?: number;
+	totalFloors?: number;
+	bathrooms?: number;
+	parking: boolean;
+	furnished: boolean;
+	status: PropertyStatus;
+	locationKey: string;
+	imageSet: keyof typeof imageSets;
+	imageCount: 3 | 4 | 5;
+};
+
+const imageSets = {
+	apartment: [
+		"https://images.pexels.com/photos/7746649/pexels-photo-7746649.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/7746646/pexels-photo-7746646.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/7535030/pexels-photo-7535030.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/7061674/pexels-photo-7061674.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/6489127/pexels-photo-6489127.jpeg?auto=compress&cs=tinysrgb&w=1600",
+	],
+	house: [
+		"https://images.pexels.com/photos/7587880/pexels-photo-7587880.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/8134821/pexels-photo-8134821.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/7587882/pexels-photo-7587882.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/14603131/pexels-photo-14603131.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/13843400/pexels-photo-13843400.jpeg?auto=compress&cs=tinysrgb&w=1600",
+	],
+	office: [
+		"https://images.pexels.com/photos/3782317/pexels-photo-3782317.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/3782251/pexels-photo-3782251.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/3782247/pexels-photo-3782247.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/16759547/pexels-photo-16759547.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=1600",
+	],
+	commercial: [
+		"https://images.pexels.com/photos/10512084/pexels-photo-10512084.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/10556343/pexels-photo-10556343.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/16176573/pexels-photo-16176573.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/264507/pexels-photo-264507.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/325229/pexels-photo-325229.jpeg?auto=compress&cs=tinysrgb&w=1600",
+	],
+	warehouse: [
+		"https://images.pexels.com/photos/12706241/pexels-photo-12706241.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/16029880/pexels-photo-16029880.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/4481259/pexels-photo-4481259.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/6169668/pexels-photo-6169668.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/1267338/pexels-photo-1267338.jpeg?auto=compress&cs=tinysrgb&w=1600",
+	],
+	mall: [
+		"https://images.pexels.com/photos/23623462/pexels-photo-23623462.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/12365478/pexels-photo-12365478.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/18206310/pexels-photo-18206310.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/13690601/pexels-photo-13690601.jpeg?auto=compress&cs=tinysrgb&w=1600",
+		"https://images.pexels.com/photos/15689733/pexels-photo-15689733.jpeg?auto=compress&cs=tinysrgb&w=1600",
+	],
+} as const;
+
+const locations: LocationSeed[] = [
+	{
+		key: "dnipro-center",
+		country: "Ukraine",
+		city: "Dnipro",
+		district: "Center",
+		street: "Dmytra Yavornytskoho Ave",
+		building: "15",
+		latitude: 48.4647,
+		longitude: 35.0462,
+	},
+	{
+		key: "dnipro-riverside",
+		country: "Ukraine",
+		city: "Dnipro",
+		district: "Sobornyi",
+		street: "Sicheslavska Naberezhna",
+		building: "27",
+		latitude: 48.4675,
+		longitude: 35.0501,
+	},
+	{
+		key: "kyiv-pechersk",
+		country: "Ukraine",
+		city: "Kyiv",
+		district: "Pecherskyi",
+		street: "Lesi Ukrainky Blvd",
+		building: "7",
+		latitude: 50.4266,
+		longitude: 30.5381,
+	},
+	{
+		key: "kyiv-podil",
+		country: "Ukraine",
+		city: "Kyiv",
+		district: "Podilskyi",
+		street: "Nyzhnii Val",
+		building: "41",
+		latitude: 50.4686,
+		longitude: 30.5149,
+	},
+	{
+		key: "lviv-center",
+		country: "Ukraine",
+		city: "Lviv",
+		district: "Halytskyi",
+		street: "Shevchenka Street",
+		building: "102",
+		latitude: 49.8397,
+		longitude: 24.0297,
+	},
+	{
+		key: "lviv-frankivskyi",
+		country: "Ukraine",
+		city: "Lviv",
+		district: "Frankivskyi",
+		street: "Kulparkivska Street",
+		building: "149",
+		latitude: 49.8178,
+		longitude: 23.9972,
+	},
+	{
+		key: "odesa-center",
+		country: "Ukraine",
+		city: "Odesa",
+		district: "Prymorskyi",
+		street: "Deribasivska Street",
+		building: "21",
+		latitude: 46.4825,
+		longitude: 30.7233,
+	},
+	{
+		key: "odesa-arcadia",
+		country: "Ukraine",
+		city: "Odesa",
+		district: "Arcadia",
+		street: "Henuezka Street",
+		building: "1",
+		latitude: 46.4298,
+		longitude: 30.7605,
+	},
+	{
+		key: "vinnytsia-center",
+		country: "Ukraine",
+		city: "Vinnytsia",
+		district: "Center",
+		street: "Soborna Street",
+		building: "58",
+		latitude: 49.2331,
+		longitude: 28.4682,
+	},
+	{
+		key: "ivano-frankivsk-center",
+		country: "Ukraine",
+		city: "Ivano-Frankivsk",
+		district: "Center",
+		street: "Nezalezhnosti Street",
+		building: "34",
+		latitude: 48.9226,
+		longitude: 24.7111,
+	},
+	{
+		key: "kharkiv-center",
+		country: "Ukraine",
+		city: "Kharkiv",
+		district: "Shevchenkivskyi",
+		street: "Nauky Ave",
+		building: "25",
+		latitude: 49.9935,
+		longitude: 36.2304,
+	},
+	{
+		key: "irpin-center",
+		country: "Ukraine",
+		city: "Irpin",
+		district: "Center",
+		street: "Universytetska Street",
+		building: "2F/1",
+		latitude: 50.5218,
+		longitude: 30.2505,
+	},
+];
+
+const properties: PropertySeed[] = [
+	{
+		title: "Простора 2-кімнатна квартира в центрі",
+		slug: "prostora-2-kimnatna-kvartyra-v-tsentri-dnipro",
+		description: "Світла квартира з новим ремонтом, повністю мебльована, поруч парк, кафе та зручна транспортна розв'язка.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.APARTMENT,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "18000",
+		area: "64.5",
+		rooms: 2,
+		floor: 5,
+		totalFloors: 9,
+		bathrooms: 1,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "dnipro-center",
+		imageSet: "apartment",
+		imageCount: 4,
+	},
+	{
+		title: "Студія з видом на набережну",
+		slug: "studiya-z-vydom-na-naberezhnu-dnipro",
+		description: "Компактна студія для подобової оренди з сучасним інтер'єром та швидким заселенням.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.APARTMENT,
+		rentPeriod: RentPeriod.DAILY,
+		price: "2400",
+		area: "38.0",
+		rooms: 1,
+		floor: 7,
+		totalFloors: 16,
+		bathrooms: 1,
+		parking: false,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "dnipro-riverside",
+		imageSet: "apartment",
+		imageCount: 3,
+	},
+	{
+		title: "Преміальна квартира біля метро Печерська",
+		slug: "premialna-kvartyra-bilya-metro-pecherska",
+		description: "Трикімнатна квартира бізнес-класу з дизайнерським ремонтом, гардеробною та теплою підлогою.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.APARTMENT,
+		price: "215000",
+		area: "96.0",
+		rooms: 3,
+		floor: 12,
+		totalFloors: 18,
+		bathrooms: 2,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "kyiv-pechersk",
+		imageSet: "apartment",
+		imageCount: 5,
+	},
+	{
+		title: "Лофт на Подолі для довгострокової оренди",
+		slug: "loft-na-podoli-dlya-dovhostrokovoi-orendy",
+		description: "Стильний лофт з відкритим плануванням, робочою зоною та виходом на тихий дворик.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.APARTMENT,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "32000",
+		area: "72.0",
+		rooms: 2,
+		floor: 4,
+		totalFloors: 7,
+		bathrooms: 1,
+		parking: false,
+		furnished: true,
+		status: PropertyStatus.RESERVED,
+		locationKey: "kyiv-podil",
+		imageSet: "apartment",
+		imageCount: 4,
+	},
+	{
+		title: "Сімейна квартира поруч з історичним центром",
+		slug: "simeina-kvartyra-poruch-z-istorychnym-tsentrom-lviv",
+		description: "Затишна квартира з двома спальнями, окремою кухнею та балконом у відреставрованому будинку.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.APARTMENT,
+		price: "128000",
+		area: "81.0",
+		rooms: 3,
+		floor: 3,
+		totalFloors: 5,
+		bathrooms: 1,
+		parking: false,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "lviv-center",
+		imageSet: "apartment",
+		imageCount: 4,
+	},
+	{
+		title: "Дизайнерська квартира у Франківському районі",
+		slug: "dyzainerska-kvartyra-u-frankivskomu-raioni-lviv",
+		description: "Новобудова з панорамними вікнами, терасою та всією побутовою технікою для комфортного життя.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.APARTMENT,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "26000",
+		area: "69.0",
+		rooms: 2,
+		floor: 9,
+		totalFloors: 12,
+		bathrooms: 1,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "lviv-frankivskyi",
+		imageSet: "apartment",
+		imageCount: 5,
+	},
+	{
+		title: "Апартаменти біля моря в Аркадії",
+		slug: "apartamenty-bilya-morya-v-arkadii",
+		description: "Світлі апартаменти для подобової оренди з просторою кухнею-вітальнею та видом на місто.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.APARTMENT,
+		rentPeriod: RentPeriod.DAILY,
+		price: "3100",
+		area: "46.0",
+		rooms: 1,
+		floor: 15,
+		totalFloors: 24,
+		bathrooms: 1,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "odesa-arcadia",
+		imageSet: "apartment",
+		imageCount: 3,
+	},
+	{
+		title: "Світла квартира в центрі Вінниці",
+		slug: "svitla-kvartyra-v-tsentri-vinnytsi",
+		description: "Охайна квартира після ремонту, теплий будинок, поряд ТРЦ, школа та зупинки транспорту.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.APARTMENT,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "15000",
+		area: "57.0",
+		rooms: 2,
+		floor: 6,
+		totalFloors: 10,
+		bathrooms: 1,
+		parking: false,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "vinnytsia-center",
+		imageSet: "apartment",
+		imageCount: 4,
+	},
+	{
+		title: "Мансардна квартира для подобової оренди",
+		slug: "mansardna-kvartyra-dlya-podobovoi-orendy-frankivsk",
+		description: "Атмосферна квартира в центрі міста, ідеально підходить для туристів та коротких поїздок.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.APARTMENT,
+		rentPeriod: RentPeriod.DAILY,
+		price: "1900",
+		area: "34.0",
+		rooms: 1,
+		floor: 4,
+		totalFloors: 4,
+		bathrooms: 1,
+		parking: false,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "ivano-frankivsk-center",
+		imageSet: "apartment",
+		imageCount: 3,
+	},
+	{
+		title: "Пентхаус з терасою у Києві",
+		slug: "pentkhaus-z-terasoiu-u-kyievi",
+		description: "Видовий пентхаус із приватною терасою, двома санвузлами та підземним паркінгом.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.APARTMENT,
+		price: "340000",
+		area: "142.0",
+		rooms: 4,
+		floor: 20,
+		totalFloors: 21,
+		bathrooms: 2,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "kyiv-pechersk",
+		imageSet: "apartment",
+		imageCount: 5,
+	},
+	{
+		title: "Сучасний будинок з садом в Ірпені",
+		slug: "suchasnyi-budynok-z-sadom-v-irpeni",
+		description: "Двоповерховий будинок з каміном, терасою, ландшафтним дизайном і автоматичними воротами.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.HOUSE,
+		price: "265000",
+		area: "210.0",
+		rooms: 5,
+		totalFloors: 2,
+		bathrooms: 3,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "irpin-center",
+		imageSet: "house",
+		imageCount: 5,
+	},
+	{
+		title: "Таунхаус для сім'ї біля Києва",
+		slug: "taunkhaus-dlya-simyi-bilya-kyieva",
+		description: "Функціональний будинок з трьома спальнями, власним подвір'ям та місцем для двох авто.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.HOUSE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "42000",
+		area: "168.0",
+		rooms: 4,
+		totalFloors: 2,
+		bathrooms: 2,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "irpin-center",
+		imageSet: "house",
+		imageCount: 4,
+	},
+	{
+		title: "Вілла з басейном в Одесі",
+		slug: "villa-z-baseinom-v-odesi",
+		description: "Приватний будинок преміум-класу з басейном, зоною барбекю та гостьовим блоком.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.HOUSE,
+		price: "490000",
+		area: "320.0",
+		rooms: 6,
+		totalFloors: 2,
+		bathrooms: 3,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "odesa-arcadia",
+		imageSet: "house",
+		imageCount: 5,
+	},
+	{
+		title: "Котедж з каміном у Львові",
+		slug: "kotedzh-z-kaminom-u-lvovi",
+		description: "Затишний котедж для продажу з великою кухнею-вітальнею, гаражем та зеленою ділянкою.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.HOUSE,
+		price: "238000",
+		area: "196.0",
+		rooms: 5,
+		totalFloors: 2,
+		bathrooms: 2,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.RESERVED,
+		locationKey: "lviv-frankivskyi",
+		imageSet: "house",
+		imageCount: 4,
+	},
+	{
+		title: "Сімейний будинок з терасою у Дніпрі",
+		slug: "simeinyi-budynok-z-terasoiu-u-dnipri",
+		description: "Практичне планування, простора кухня, окрема котельня та місце для літнього відпочинку.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.HOUSE,
+		price: "185000",
+		area: "174.0",
+		rooms: 4,
+		totalFloors: 2,
+		bathrooms: 2,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "dnipro-riverside",
+		imageSet: "house",
+		imageCount: 3,
+	},
+	{
+		title: "Будинок для оренди біля парку",
+		slug: "budynok-dlya-orendy-bilya-parku-ivano-frankivsk",
+		description: "Окремий будинок для довгострокової оренди з меблями, технікою та затишним двориком.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.HOUSE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "28000",
+		area: "128.0",
+		rooms: 3,
+		totalFloors: 2,
+		bathrooms: 2,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "ivano-frankivsk-center",
+		imageSet: "house",
+		imageCount: 4,
+	},
+	{
+		title: "Офіс open space у бізнес-центрі",
+		slug: "ofis-open-space-u-biznes-tsentri-kyiv",
+		description: "Світлий офіс з панорамними вікнами, переговорною кімнатою та готовою серверною.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.OFFICE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "68000",
+		area: "180.0",
+		rooms: 5,
+		floor: 8,
+		totalFloors: 14,
+		bathrooms: 2,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "kyiv-pechersk",
+		imageSet: "office",
+		imageCount: 5,
+	},
+	{
+		title: "Офіс для IT-команди на Подолі",
+		slug: "ofis-dlya-it-komandy-na-podoli",
+		description: "Готовий офіс з робочими місцями, кухнею, душем та якісною вентиляцією.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.OFFICE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "54000",
+		area: "146.0",
+		rooms: 4,
+		floor: 5,
+		totalFloors: 9,
+		bathrooms: 2,
+		parking: false,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "kyiv-podil",
+		imageSet: "office",
+		imageCount: 4,
+	},
+	{
+		title: "Представницький офіс у центрі Львова",
+		slug: "predstavnytskyi-ofis-u-tsentri-lvova",
+		description: "Приміщення класу A для компанії або агенції з рецепцією та кількома кабінетами.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.OFFICE,
+		price: "198000",
+		area: "154.0",
+		rooms: 6,
+		floor: 4,
+		totalFloors: 7,
+		bathrooms: 2,
+		parking: false,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "lviv-center",
+		imageSet: "office",
+		imageCount: 4,
+	},
+	{
+		title: "Офіс з видом на море в Одесі",
+		slug: "ofis-z-vydom-na-more-v-odesi",
+		description: "Окремий блок у сучасному бізнес-центрі з лаунж-зоною та власною кухнею.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.OFFICE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "47000",
+		area: "132.0",
+		rooms: 4,
+		floor: 10,
+		totalFloors: 17,
+		bathrooms: 2,
+		parking: true,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "odesa-center",
+		imageSet: "office",
+		imageCount: 3,
+	},
+	{
+		title: "Продаж поверху під офіси у Харкові",
+		slug: "prodazh-poverkhu-pid-ofisy-u-kharkovi",
+		description: "Цілий офісний поверх з окремим входом, пропускною системою та паркінгом для відвідувачів.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.OFFICE,
+		price: "225000",
+		area: "310.0",
+		rooms: 8,
+		floor: 6,
+		totalFloors: 10,
+		bathrooms: 3,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "kharkiv-center",
+		imageSet: "office",
+		imageCount: 5,
+	},
+	{
+		title: "Фасадне приміщення під магазин у центрі",
+		slug: "fasadne-prymishchennia-pid-mahazyn-u-tsentri-dnipro",
+		description: "Комерційне приміщення з великими вітринами та високим пішохідним трафіком.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.COMMERCIAL,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "59000",
+		area: "118.0",
+		rooms: 3,
+		floor: 1,
+		totalFloors: 5,
+		bathrooms: 1,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "dnipro-center",
+		imageSet: "commercial",
+		imageCount: 4,
+	},
+	{
+		title: "Шоурум на Подолі з окремим входом",
+		slug: "shourum-na-podoli-z-okremym-vkhodom",
+		description: "Приміщення для бренду або студії з ремонтом, складською зоною та рекламою на фасаді.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.COMMERCIAL,
+		price: "174000",
+		area: "127.0",
+		rooms: 4,
+		floor: 1,
+		totalFloors: 4,
+		bathrooms: 1,
+		parking: false,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "kyiv-podil",
+		imageSet: "commercial",
+		imageCount: 5,
+	},
+	{
+		title: "Приміщення під ресторан у Львові",
+		slug: "prymishchennia-pid-restoran-u-lvovi",
+		description: "Велика зала, підведені комунікації, вентиляція та зона для літнього майданчика.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.COMMERCIAL,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "72000",
+		area: "206.0",
+		rooms: 5,
+		floor: 1,
+		totalFloors: 3,
+		bathrooms: 2,
+		parking: false,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "lviv-center",
+		imageSet: "commercial",
+		imageCount: 4,
+	},
+	{
+		title: "Бутик на Дерибасівській",
+		slug: "butyk-na-derybasivskii",
+		description: "Фасадне приміщення в туристичній локації, ідеально під fashion retail або premium showroom.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.COMMERCIAL,
+		price: "285000",
+		area: "96.0",
+		rooms: 3,
+		floor: 1,
+		totalFloors: 3,
+		bathrooms: 1,
+		parking: false,
+		furnished: true,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "odesa-center",
+		imageSet: "commercial",
+		imageCount: 3,
+	},
+	{
+		title: "Торговий майданчик у Вінниці",
+		slug: "torhovyi-maidanchyk-u-vinnytsi",
+		description: "Світле приміщення для салону, аптеки чи невеликого магазину з місцем під вивіску.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.COMMERCIAL,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "34000",
+		area: "84.0",
+		rooms: 2,
+		floor: 1,
+		totalFloors: 2,
+		bathrooms: 1,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "vinnytsia-center",
+		imageSet: "commercial",
+		imageCount: 3,
+	},
+	{
+		title: "Складський блок поруч з об'їзною",
+		slug: "skladskyi-blok-poruch-z-obiznoiu-dnipro",
+		description: "Сухий склад з рампою, офісною кімнатою та зручним заїздом для вантажівок.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.WAREHOUSE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "88000",
+		area: "560.0",
+		rooms: 4,
+		floor: 1,
+		totalFloors: 1,
+		bathrooms: 1,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "dnipro-riverside",
+		imageSet: "warehouse",
+		imageCount: 4,
+	},
+	{
+		title: "Логістичний склад біля Києва",
+		slug: "lohistychnyi-sklad-bilya-kyieva",
+		description: "Високі стелі, антипилова підлога, рампи та автономне опалення для стабільної роботи.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.WAREHOUSE,
+		price: "610000",
+		area: "2400.0",
+		rooms: 12,
+		floor: 1,
+		totalFloors: 1,
+		bathrooms: 4,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "irpin-center",
+		imageSet: "warehouse",
+		imageCount: 5,
+	},
+	{
+		title: "Теплий склад у Львові",
+		slug: "teplyi-sklad-u-lvovi",
+		description: "Складський комплекс з охороною, відеонаглядом та офісним блоком для персоналу.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.WAREHOUSE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "76000",
+		area: "710.0",
+		rooms: 5,
+		floor: 1,
+		totalFloors: 1,
+		bathrooms: 2,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "lviv-frankivskyi",
+		imageSet: "warehouse",
+		imageCount: 3,
+	},
+	{
+		title: "Склад біля порту в Одесі",
+		slug: "sklad-bilya-portu-v-odesi",
+		description: "Об'єкт для дистрибуції товарів з великою воротною групою та зручним під'їздом.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.WAREHOUSE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "99000",
+		area: "860.0",
+		rooms: 6,
+		floor: 1,
+		totalFloors: 1,
+		bathrooms: 2,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.RESERVED,
+		locationKey: "odesa-center",
+		imageSet: "warehouse",
+		imageCount: 4,
+	},
+	{
+		title: "Малий склад для e-commerce у Харкові",
+		slug: "malyi-sklad-dlya-ecommerce-u-kharkovi",
+		description: "Компактний склад з офісною кімнатою, підійде для інтернет-магазину або сервісного центру.",
+		listingType: ListingType.RENT,
+		propertyType: PropertyType.WAREHOUSE,
+		rentPeriod: RentPeriod.MONTHLY,
+		price: "31000",
+		area: "220.0",
+		rooms: 2,
+		floor: 1,
+		totalFloors: 1,
+		bathrooms: 1,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "kharkiv-center",
+		imageSet: "warehouse",
+		imageCount: 3,
+	},
+	{
+		title: "Торговий центр у центрі Одеси",
+		slug: "torhovyi-tsentr-u-tsentri-odesy",
+		description: "Окрема будівля з орендарями, підземним паркінгом та високим пішохідним трафіком.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.MALL,
+		price: "950000",
+		area: "1800.0",
+		rooms: 20,
+		totalFloors: 4,
+		bathrooms: 8,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "odesa-center",
+		imageSet: "mall",
+		imageCount: 5,
+	},
+	{
+		title: "Торгова галерея в Києві",
+		slug: "torhova-halereia-v-kyievi",
+		description: "Сучасний торговий комплекс із супермаркетом-якорем, зонами відпочинку та ліфтами.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.MALL,
+		price: "1240000",
+		area: "2450.0",
+		rooms: 24,
+		totalFloors: 5,
+		bathrooms: 10,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "kyiv-podil",
+		imageSet: "mall",
+		imageCount: 4,
+	},
+	{
+		title: "Районний ТЦ у Дніпрі",
+		slug: "raionnyi-tts-u-dnipri",
+		description: "Компактний торговий центр з супутньою інфраструктурою, ескалаторами та продуктовою зоною.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.MALL,
+		price: "780000",
+		area: "1320.0",
+		rooms: 16,
+		totalFloors: 3,
+		bathrooms: 6,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "dnipro-center",
+		imageSet: "mall",
+		imageCount: 3,
+	},
+	{
+		title: "ТЦ поруч з туристичним маршрутом у Львові",
+		slug: "tts-poruch-z-turystychnym-marshrutom-u-lvovi",
+		description: "Готовий торговий об'єкт з ресторанною зоною та орендними потоками від стабільних брендів.",
+		listingType: ListingType.SALE,
+		propertyType: PropertyType.MALL,
+		price: "870000",
+		area: "1540.0",
+		rooms: 18,
+		totalFloors: 4,
+		bathrooms: 7,
+		parking: true,
+		furnished: false,
+		status: PropertyStatus.AVAILABLE,
+		locationKey: "lviv-center",
+		imageSet: "mall",
+		imageCount: 4,
+	},
+];
+
+function buildImages(title: string, setKey: keyof typeof imageSets, count: 3 | 4 | 5) {
+	return imageSets[setKey].slice(0, count).map((url, index) => ({
+		url,
+		alt: `${title} - фото ${index + 1}`,
+		isMain: index === 0,
+	}));
+}
+
 async function main() {
 	await prisma.transaction.deleteMany();
 	await prisma.message.deleteMany();
@@ -32,9 +911,8 @@ async function main() {
 	await prisma.property.deleteMany();
 	await prisma.location.deleteMany();
 	await prisma.user.deleteMany();
-	
 
-	console.log("Seeding...");
+	console.warn("Seeding...");
 
 	const admin = await prisma.user.upsert({
 		where: { email: "admin@example.com" },
@@ -51,7 +929,7 @@ async function main() {
 		where: { email: "manager@example.com" },
 		update: {},
 		create: {
-			name: "Manager",
+			name: "Менеджер Олена",
 			email: "manager@example.com",
 			password: "123456",
 			phone: "+380991112233",
@@ -63,7 +941,7 @@ async function main() {
 		where: { email: "user@example.com" },
 		update: {},
 		create: {
-			name: "User",
+			name: "Користувач Ігор",
 			email: "user@example.com",
 			password: "123456",
 			phone: "+380991234567",
@@ -71,338 +949,156 @@ async function main() {
 		},
 	});
 
-	const location1 = await prisma.location.create({
-		data: {
-			country: "Ukraine",
-			city: "Dnipro",
-			district: "Center",
-			street: "Yavornytskoho Ave",
-			building: "15",
-			latitude: 48.4647,
-			longitude: 35.0462,
-		},
-	});
+	const locationMap = new Map<string, number>();
 
-	const location2 = await prisma.location.create({
-		data: {
-			country: "Ukraine",
-			city: "Dnipro",
-			district: "Sobornyi",
-			street: "Sicheslavska Naberezhna",
-			building: "27",
-			latitude: 48.4675,
-			longitude: 35.0501,
-		},
-	});
+	for (const { key, ...location } of locations) {
+		const createdLocation = await prisma.location.create({
+			data: location,
+		});
 
-	const location3 = await prisma.location.create({
-		data: {
-			country: "Ukraine",
-			city: "Kyiv",
-			district: "Pecherskyi",
-			street: "Lesi Ukrainky Blvd",
-			building: "7",
-			latitude: 50.4266,
-			longitude: 30.5381,
-		},
-	});
+		locationMap.set(key, createdLocation.id);
+	}
 
-	const location4 = await prisma.location.create({
-		data: {
-			country: "Ukraine",
-			city: "Lviv",
-			district: "Halytskyi",
-			street: "Shevchenka Street",
-			building: "102",
-			latitude: 49.8397,
-			longitude: 24.0297,
-		},
-	});
+	const createdProperties = [];
 
-	const location5 = await prisma.location.create({
-		data: {
-			country: "Ukraine",
-			city: "Odesa",
-			district: "Prymorskyi",
-			street: "Deribasivska Street",
-			building: "21",
-			latitude: 46.4825,
-			longitude: 30.7233,
-		},
-	});
+	for (const property of properties) {
+		const locationId = locationMap.get(property.locationKey);
 
-	const rentApartment = await prisma.property.create({
-		data: {
-			title: "2-room apartment in city center",
-			slug: "2-room-apartment-city-center",
-			description: "Modern furnished apartment for monthly rent in the center of Dnipro.",
-			listingType: ListingType.RENT,
-			propertyType: PropertyType.APARTMENT,
-			rentPeriod: RentPeriod.MONTHLY,
-			price: "18000",
-			area: "64.5",
-			rooms: 2,
-			floor: 5,
-			totalFloors: 9,
-			bathrooms: 1,
-			parking: true,
-			furnished: true,
-			status: PropertyStatus.AVAILABLE,
-			managerId: manager.id,
-			locationId: location1.id,
-			images: {
-				create: [
-					{
-						url: "/images/apartment-1.jpg",
-						alt: "Living room",
-						isMain: true,
-					},
-					{
-						url: "/images/apartment-2.jpg",
-						alt: "Bedroom",
-						isMain: false,
-					},
-				],
+		if (!locationId) {
+			throw new Error(`Location with key "${property.locationKey}" not found`);
+		}
+
+		const createdProperty = await prisma.property.create({
+			data: {
+				title: property.title,
+				slug: property.slug,
+				description: property.description,
+				listingType: property.listingType,
+				propertyType: property.propertyType,
+				rentPeriod: property.rentPeriod ?? null,
+				price: property.price,
+				area: property.area,
+				rooms: property.rooms ?? null,
+				floor: property.floor ?? null,
+				totalFloors: property.totalFloors ?? null,
+				bathrooms: property.bathrooms ?? null,
+				parking: property.parking,
+				furnished: property.furnished,
+				status: property.status,
+				managerId: manager.id,
+				locationId,
+				images: {
+					create: buildImages(property.title, property.imageSet, property.imageCount),
+				},
 			},
-		},
-	});
+		});
 
-	const saleCommercial = await prisma.property.create({
-		data: {
-			title: "Commercial property for sale",
-			slug: "commercial-property-for-sale",
-			description: "Commercial property suitable for office or retail business.",
-			listingType: ListingType.SALE,
-			propertyType: PropertyType.COMMERCIAL,
-			price: "125000",
-			area: "145.0",
-			rooms: 5,
-			floor: 1,
-			totalFloors: 3,
-			bathrooms: 2,
-			parking: true,
-			furnished: false,
-			status: PropertyStatus.AVAILABLE,
-			managerId: manager.id,
-			locationId: location2.id,
-			images: {
-				create: [
-					{
-						url: "/images/commercial-1.jpg",
-						alt: "Facade",
-						isMain: true,
-					},
-				],
+		createdProperties.push(createdProperty);
+	}
+
+	const featuredRentApartment = createdProperties.find(
+		(property) => property.slug === "prostora-2-kimnatna-kvartyra-v-tsentri-dnipro",
+	);
+	const featuredOffice = createdProperties.find(
+		(property) => property.slug === "ofis-open-space-u-biznes-tsentri-kyiv",
+	);
+	const featuredHouse = createdProperties.find(
+		(property) => property.slug === "suchasnyi-budynok-z-sadom-v-irpeni",
+	);
+	const featuredMall = createdProperties.find(
+		(property) => property.slug === "torhovyi-tsentr-u-tsentri-odesy",
+	);
+
+	if (!featuredRentApartment || !featuredOffice || !featuredHouse || !featuredMall) {
+		throw new Error("Featured properties for related seed entities were not created");
+	}
+
+	await prisma.request.createMany({
+		data: [
+			{
+				type: RequestType.RENT,
+				message: "Хочу орендувати квартиру на тривалий термін. Чи можна домовитися про перегляд цього тижня?",
+				status: RequestStatus.PENDING,
+				userId: user.id,
+				propertyId: featuredRentApartment.id,
 			},
-		},
-	});
-
-	const saleHouse = await prisma.property.create({
-		data: {
-			title: "Modern family house with garden",
-			slug: "modern-family-house-with-garden",
-			description: "Spacious modern house with garage, garden and terrace in Kyiv.",
-			listingType: ListingType.SALE,
-			propertyType: PropertyType.HOUSE,
-			price: "285000",
-			area: "220.0",
-			rooms: 6,
-			totalFloors: 2,
-			bathrooms: 3,
-			parking: true,
-			furnished: true,
-			status: PropertyStatus.AVAILABLE,
-			managerId: manager.id,
-			locationId: location3.id,
-			images: {
-				create: [
-					{
-						url: "/images/house-1.jpg",
-						alt: "House front view",
-						isMain: true,
-					},
-					{
-						url: "/images/house-2.jpg",
-						alt: "House terrace",
-						isMain: false,
-					},
-				],
+			{
+				type: RequestType.CONSULTATION,
+				message: "Потрібна консультація щодо умов купівлі офісу та можливого торгу.",
+				status: RequestStatus.IN_PROGRESS,
+				userId: user.id,
+				propertyId: featuredOffice.id,
 			},
-		},
-	});
-
-	const rentApartmentDaily = await prisma.property.create({
-		data: {
-			title: "Cozy studio apartment for daily rent",
-			slug: "cozy-studio-apartment-daily-rent",
-			description: "Small but cozy studio apartment in Lviv for short stays.",
-			listingType: ListingType.RENT,
-			propertyType: PropertyType.APARTMENT,
-			rentPeriod: RentPeriod.DAILY,
-			price: "2200",
-			area: "38.0",
-			rooms: 1,
-			floor: 3,
-			totalFloors: 6,
-			bathrooms: 1,
-			parking: false,
-			furnished: true,
-			status: PropertyStatus.AVAILABLE,
-			managerId: manager.id,
-			locationId: location4.id,
-			images: {
-				create: [
-					{
-						url: "/images/studio-1.jpg",
-						alt: "Studio interior",
-						isMain: true,
-					},
-				],
+			{
+				type: RequestType.VIEWING,
+				message: "Чи можна організувати перегляд будинку в суботу після обіду?",
+				status: RequestStatus.PENDING,
+				userId: user.id,
+				propertyId: featuredHouse.id,
 			},
-		},
+		],
 	});
 
-	const saleMall = await prisma.property.create({
-		data: {
-			title: "Shopping mall building in Odesa",
-			slug: "shopping-mall-building-odesa",
-			description: "Large shopping center building with multiple retail spaces and parking.",
-			listingType: ListingType.SALE,
-			propertyType: PropertyType.MALL,
-			price: "950000",
-			area: "1800.0",
-			rooms: 20,
-			totalFloors: 4,
-			bathrooms: 8,
-			parking: true,
-			furnished: false,
-			status: PropertyStatus.AVAILABLE,
-			managerId: manager.id,
-			locationId: location5.id,
-			images: {
-				create: [
-					{
-						url: "/images/mall-1.jpg",
-						alt: "Mall exterior",
-						isMain: true,
-					},
-					{
-						url: "/images/mall-2.jpg",
-						alt: "Mall interior",
-						isMain: false,
-					},
-				],
+	await prisma.favorite.createMany({
+		data: [
+			{ userId: user.id, propertyId: featuredRentApartment.id },
+			{ userId: user.id, propertyId: featuredOffice.id },
+			{ userId: user.id, propertyId: featuredHouse.id },
+			{ userId: user.id, propertyId: featuredMall.id },
+		],
+	});
+
+	await prisma.review.createMany({
+		data: [
+			{
+				rating: 5,
+				comment: "Дуже якісна квартира, гарна локація та приємний менеджер.",
+				userId: user.id,
+				propertyId: featuredRentApartment.id,
 			},
-		},
+			{
+				rating: 4,
+				comment: "Офіс виглядає перспективно для команди, сподобалось планування.",
+				userId: user.id,
+				propertyId: featuredOffice.id,
+			},
+		],
 	});
 
-	await prisma.request.create({
-		data: {
-			type: RequestType.RENT,
-			message: "I want to rent this apartment for a long term.",
-			status: RequestStatus.PENDING,
-			userId: user.id,
-			propertyId: rentApartment.id,
-		},
-	});
-
-	await prisma.request.create({
-		data: {
-			type: RequestType.BUY,
-			message: "I am interested in buying this commercial property.",
-			status: RequestStatus.IN_PROGRESS,
-			userId: user.id,
-			propertyId: saleCommercial.id,
-		},
-	});
-
-	await prisma.request.create({
-		data: {
-			type: RequestType.VIEWING,
-			message: "Can I schedule a viewing for this house next week?",
-			status: RequestStatus.PENDING,
-			userId: user.id,
-			propertyId: saleHouse.id,
-		},
-	});
-
-	await prisma.favorite.create({
-		data: {
-			userId: user.id,
-			propertyId: rentApartment.id,
-		},
-	});
-
-	await prisma.favorite.create({
-		data: {
-			userId: user.id,
-			propertyId: saleCommercial.id,
-		},
-	});
-
-	await prisma.favorite.create({
-		data: {
-			userId: user.id,
-			propertyId: saleHouse.id,
-		},
-	});
-
-	await prisma.review.create({
-		data: {
-			rating: 5,
-			comment: "Great apartment and very good location.",
-			userId: user.id,
-			propertyId: rentApartment.id,
-		},
-	});
-
-	await prisma.review.create({
-		data: {
-			rating: 4,
-			comment: "Very promising property for business.",
-			userId: user.id,
-			propertyId: saleCommercial.id,
-		},
-	});
-
-	await prisma.message.create({
-		data: {
-			content: "Hello, is this apartment still available?",
-			senderId: user.id,
-			receiverId: manager.id,
-		},
-	});
-
-	await prisma.message.create({
-		data: {
-			content: "Yes, it is available. Would you like to schedule a viewing?",
-			senderId: manager.id,
-			receiverId: user.id,
-		},
+	await prisma.message.createMany({
+		data: [
+			{
+				content: "Доброго дня, чи актуальна ще квартира в центрі Дніпра?",
+				senderId: user.id,
+				receiverId: manager.id,
+			},
+			{
+				content: "Так, об'єкт актуальний. Можу запропонувати перегляд уже завтра.",
+				senderId: manager.id,
+				receiverId: user.id,
+			},
+		],
 	});
 
 	await prisma.transaction.create({
 		data: {
 			type: TransactionType.RENT,
 			status: TransactionStatus.ACTIVE,
-			price: "18000",
+			price: featuredRentApartment.price,
 			startDate: new Date("2026-03-10"),
 			endDate: new Date("2026-04-10"),
-			propertyId: rentApartment.id,
+			propertyId: featuredRentApartment.id,
 			buyerId: user.id,
 			sellerId: manager.id,
 		},
 	});
 
-	console.log({
-		admin,
-		manager,
-		user,
-		rentApartment,
-		saleCommercial,
-		saleHouse,
-		rentApartmentDaily,
-		saleMall,
+	console.warn({
+		admin: admin.email,
+		manager: manager.email,
+		user: user.email,
+		locations: locationMap.size,
+		properties: createdProperties.length,
 	});
 }
 
@@ -410,8 +1106,8 @@ main()
 	.then(async () => {
 		await prisma.$disconnect();
 	})
-	.catch(async (e) => {
-		console.error(e);
+	.catch(async (error) => {
+		console.error(error);
 		await prisma.$disconnect();
 		process.exit(1);
 	});
