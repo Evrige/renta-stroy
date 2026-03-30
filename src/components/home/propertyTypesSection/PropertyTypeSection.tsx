@@ -3,6 +3,7 @@ import { Container } from "@/components/layout/Container";
 import { prisma } from "@/lib/prisma";
 import PropertyTypeItem from "@/components/home/propertyTypesSection/PropertyTypeItem";
 import { formatCount } from "@/app/utils/formatCount";
+import { ROUTES } from "@/lib/constants/routes";
 
 const propertyTypeCards = [
 	{
@@ -78,6 +79,7 @@ const PropertyTypeSection = async () => {
 								title={item.title}
 								count={count}
 								countLabel={formatCount(count)}
+								href={`${ROUTES.PROPERTIES}?propertyType=${item.type}`}
 								className={item.className}
 							/>
 						);

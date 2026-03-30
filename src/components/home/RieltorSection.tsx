@@ -1,6 +1,7 @@
 import React from 'react';
 import {Container} from "@/components/layout/Container";
 import RieltorCard from "@/components/home/RieltorCard";
+import {ROUTES} from "@/lib/constants/routes";
 
 const RieltorSection = () => {
 	return (
@@ -15,14 +16,16 @@ const RieltorSection = () => {
 				<div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
 					<RieltorCard title="Купити нерухомість"
 											 description="Підберемо будинок або квартиру за вашим бюджетом, районом і побажаннями."
-											 icon="/icons/realtor2.svg" alt="Пошук нерухомості для купівлі" buttonText="Знайти житло"/>
+											 icon="/icons/realtor2.svg" alt="Пошук нерухомості для купівлі" buttonText="Знайти житло"
+											 href={`${ROUTES.PROPERTIES}?listingType=SALE`}/>
 					<RieltorCard title="Продати нерухомість"
 											 description="Допоможемо вигідно презентувати об&apos;єкт, знайти покупця та супроводимо угоду."
 											 icon="/icons/realtor1.svg" alt="Допомога з продажем нерухомості"
 											 buttonText="Розмістити оголошення" buttonVariant="filled"/>
 					<RieltorCard title="Орендувати нерухомість"
 											 description="Знайдемо варіант для короткострокової або довгострокової оренди під ваш запит."
-											 icon="/icons/realtor3.svg" alt="Пошук нерухомості для оренди" buttonText="	Знайти оренду"/>
+											 icon="/icons/realtor3.svg" alt="Пошук нерухомості для оренди" buttonText="Знайти оренду"
+											 href={`${ROUTES.PROPERTIES}?listingType=RENT`}/>
 				</div>
 			</Container>
 		</section>

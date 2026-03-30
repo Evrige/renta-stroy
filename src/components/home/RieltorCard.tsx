@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from "next/image";
+import Link from "next/link";
 
 interface Props {
 	title: string,
@@ -7,10 +8,16 @@ interface Props {
 	icon: string,
 	alt: string,
 	buttonText: string,
+	href?: string,
 	buttonVariant?: "filled" | "outline";
 }
 
-const RieltorCard = ({title, description, icon, alt, buttonText, buttonVariant = "outline"}: Props) => {
+const RieltorCard = ({title, description, icon, alt, buttonText, href, buttonVariant = "outline"}: Props) => {
+	const buttonClassName =
+		buttonVariant === "filled"
+			? "mt-6 rounded-xl border border-primary bg-primary px-5 py-2 text-white transition hover:opacity-90 cursor-pointer"
+			: "mt-6 rounded-xl border border-primary px-5 py-2 text-primary transition hover:bg-primary hover:text-white cursor-pointer";
+
 	return (
 		<div
 			className="flex h-full flex-col items-center rounded-3xl bg-background/80 p-8 text-center shadow-sm ring-1 ring-black/5">
@@ -19,14 +26,15 @@ const RieltorCard = ({title, description, icon, alt, buttonText, buttonVariant =
 			<p className="mt-3 flex-1 text-secondary">
 				{description}
 			</p>
-			<button
-				className={
-					buttonVariant === "filled"
-						? "mt-6 rounded-xl border border-primary bg-primary px-5 py-2 text-white transition hover:opacity-90 cursor-pointer"
-						: "mt-6 rounded-xl border border-primary px-5 py-2 text-primary transition hover:bg-primary hover:text-white cursor-pointer"
-				}>
-				{buttonText}
-			</button>
+			{href ? (
+				<Link href={href} className={buttonClassName}>
+					{buttonText}
+				</Link>
+			) : (
+				<button className={buttonClassName}>
+					{buttonText}
+				</button>
+			)}
 		</div>
 	);
 };

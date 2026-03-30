@@ -1,5 +1,7 @@
 import React from 'react';
 import {Container} from "@/components/layout/Container";
+import Link from "next/link";
+import {ROUTES} from "@/lib/constants/routes";
 
 const AdSellBuySection = () => {
 	return (
@@ -19,9 +21,12 @@ const AdSellBuySection = () => {
 						<button className="rounded-xl bg-primary px-8 py-4 text-white cursor-pointer">
 							Розмістити оголошення
 						</button>
-						<button className="rounded-xl bg-white px-8 py-4 text-primary cursor-pointer">
+						<Link
+							href={ROUTES.PROPERTIES}
+							className="rounded-xl bg-white px-8 py-4 text-primary cursor-pointer"
+						>
 							Знайти оголошення
-						</button>
+						</Link>
 					</div>
 				</div>
 			</Container>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 
 interface Props {
@@ -5,6 +6,7 @@ interface Props {
 	title: string;
 	count: number;
 	countLabel: string;
+	href: string;
 	className?: string;
 }
 
@@ -13,10 +15,14 @@ const PropertyTypeItem = ({
 														title,
 														count,
 														countLabel,
+														href,
 														className,
 													}: Props) => {
 	return (
-		<div className={`group relative row-span-1 overflow-hidden rounded-2xl ${className}`}>
+		<Link
+			href={href}
+			className={`group relative row-span-1 overflow-hidden rounded-2xl ${className}`}
+		>
 			<Image
 				src={imageUrl}
 				alt={title}
@@ -26,13 +32,13 @@ const PropertyTypeItem = ({
 
 			<div className="absolute inset-0 bg-black/35 transition duration-300 group-hover:bg-black/45" />
 
-			<div className="absolute top-4 left-4 z-10 text-white">
+			<div className="absolute left-4 top-4 z-10 text-white">
 				<h3 className="text-lg font-semibold">{title}</h3>
 				<span className="text-sm">
           {count} {countLabel}
         </span>
 			</div>
-		</div>
+		</Link>
 	);
 };
 

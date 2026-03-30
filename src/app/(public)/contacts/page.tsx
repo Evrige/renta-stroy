@@ -3,6 +3,8 @@ import {Container} from "@/components/layout/Container";
 import {Mail, MapPin, Phone} from "lucide-react";
 
 const Page = () => {
+	const officeAddress = "49000, м. Дніпро, просп. Яворницького, 117, к. 62";
+
 	return (
 		<Container className="py-12">
 
@@ -23,7 +25,7 @@ const Page = () => {
 
 					<div className="flex items-center gap-3">
 						<MapPin className="w-5 h-5 text-primary" />
-						<span className="text-secondary">Україна, м. Київ</span>
+						<span className="text-secondary">{officeAddress}</span>
 					</div>
 
 					<div className="flex items-center gap-3">
@@ -69,8 +71,18 @@ const Page = () => {
 			</div>
 
 			<div className="mt-16">
-				<div className="w-full h-[300px] bg-gray-200 rounded-xl flex items-center justify-center text-gray-500">
-					Карта (Google Maps)
+				<div className="mb-5">
+					<h2 className="text-2xl font-semibold text-primary">Офіс на карті</h2>
+					<p className="mt-2 text-secondary">{officeAddress}</p>
+				</div>
+				<div className="overflow-hidden rounded-[28px] border border-gray-200 shadow-sm">
+					<iframe
+						title="Карта офісу Renta Stroy"
+						src="https://maps.google.com/maps?q=48.466121,35.041999&z=16&output=embed"
+						loading="lazy"
+						referrerPolicy="no-referrer-when-downgrade"
+						className="h-[360px] w-full border-0"
+					/>
 				</div>
 			</div>
 

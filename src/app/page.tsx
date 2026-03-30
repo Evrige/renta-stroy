@@ -5,6 +5,8 @@ import PropertyTypeSection from "@/components/home/propertyTypesSection/Property
 import RieltorSection from "@/components/home/RieltorSection";
 import React from "react";
 import AdSellBuySection from "@/components/home/AdSellBuySection";
+import ReviewSection from "@/components/home/ReviewSection";
+import PartnerSection from "@/components/home/PartnerSection";
 
 export default function HomePage() {
 
@@ -17,7 +19,8 @@ export default function HomePage() {
 			<PropertyTypeSection/>
 			<RieltorSection/>
 			<AdSellBuySection/>
-
+			<ReviewSection/>
+			<PartnerSection/>
 		</main>
 	);
 }

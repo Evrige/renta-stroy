@@ -23,6 +23,10 @@ const Page = async ({params}: { params: Promise<{ slug: string }> }) => {
 	if (!property) {
 		notFound();
 	}
+
+	const latitude = property.location.latitude ? Number(property.location.latitude) : null;
+	const longitude = property.location.longitude ? Number(property.location.longitude) : null;
+	const hasCoordinates = latitude !== null && longitude !== null;
 	return (
 		<Container className="py-8 sm:py-10">
 			<div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
@@ -60,6 +64,27 @@ const Page = async ({params}: { params: Promise<{ slug: string }> }) => {
 					<div className="text-secondary mt-5">
 						{property.description}
 					</div>
+
+					{hasCoordinates ? (
+						<div className="mt-10 overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-[0_20px_60px_rgba(24,26,32,0.08)]">
+							<div className="border-b border-gray-200 px-6 py-5 sm:px-7">
+								<h2 className="text-2xl font-semibold text-primary">Розташування на карті</h2>
+								<p className="mt-2 text-sm text-secondary">
+									{property.location.city}
+									{property.location.district ? `, ${property.location.district}` : ""}
+									{property.location.street ? `, ${property.location.street}` : ""}
+									{property.location.building ? ` ${property.location.building}` : ""}
+								</p>
+							</div>
+							<iframe
+								title={`Карта розташування ${property.title}`}
+								src={`https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`}
+								loading="lazy"
+								referrerPolicy="no-referrer-when-downgrade"
+								className="h-[360px] w-full border-0"
+							/>
+						</div>
+					) : null}
 				</div>
 
 				<aside className="xl:sticky xl:top-6">

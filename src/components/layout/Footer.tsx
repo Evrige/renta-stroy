@@ -36,7 +36,7 @@ const Footer = () => {
 					<div>
 						<h4 className="font-medium mb-3">Контакти</h4>
 						<ul className="space-y-2 text-gray-400 text-sm">
-							<li>📍 Україна Дніпро</li>
+							<li>📍 м. Дніпро, просп. Яворницького, 117, к. 62</li>
 							<li>📞 +380 00 000 00 00</li>
 							<li>✉️ info@renta-stroy.ua</li>
 						</ul>
@@ -52,7 +52,8 @@ const Footer = () => {
 					</div>
 				</div>
 
-				<div className="border-t border-gray-700 mt-10 pt-6 flex flex-col md:flex-row justify-between text-sm text-gray-400">
+				<div
+					className="border-t border-gray-700 mt-10 pt-6 flex flex-col md:flex-row justify-between text-sm text-gray-400">
 					<span>© {new Date().getFullYear()} Renta Stroy. Всі права захищені.</span>
 					<span>Зроблено з ❤️</span>
 				</div>
