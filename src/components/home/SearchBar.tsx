@@ -1,6 +1,6 @@
 import { ListingType, PropertyType } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
 import { ROUTES } from "@/lib/constants/routes";
+import { getCities } from "@/lib/queries/locations";
 
 const listingTypeOptions = [
 	{ value: "", label: "Все" },
@@ -35,15 +35,7 @@ const priceOptions = [
 ] as const;
 
 const SearchBar = async () => {
-	const cities = await prisma.location.findMany({
-		select: {
-			city: true,
-		},
-		distinct: ["city"],
-		orderBy: {
-			city: "asc",
-		},
-	});
+	const cities = await getCities();
 
 	return (
 		<section className="relative mx-auto -mt-18 flex max-w-7xl flex-col justify-end px-6 pb-24">

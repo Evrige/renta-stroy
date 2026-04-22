@@ -1,39 +1,13 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {prisma} from "@/lib/prisma";
 import {Container} from "@/components/layout/Container";
 import {formatPrice} from "@/app/utils/formatters";
 import {ROUTES} from "@/lib/constants/routes";
+import { getFeaturedProperties } from "@/lib/queries/properties";
 
 const Slider = async () => {
-	const featuredListings = await prisma.property.findMany({
-		select: {
-			id: true,
-			slug: true,
-			title: true,
-			price: true,
-			location: {
-				select: {
-					city: true,
-				},
-			},
-			images: {
-				where: {
-					isMain: true,
-				},
-				select: {
-					url: true,
-					alt: true,
-				},
-				take: 1,
-			},
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-		take: 3,
-	});
+	const featuredListings = await getFeaturedProperties();
 
 	return (
 		<section className="py-20">

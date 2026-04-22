@@ -4,5 +4,12 @@ export const ROUTES = {
 	ABOUT: "/about",
 	CONTACTS: "/contacts",
 	LOGIN: "/login",
+	REGISTER: "/register",
+	ACCOUNT: "/account",
+	ACCOUNT_NEW_LISTING: "/account/listings/new",
+	CRM: "/crm",
+	CRM_NEW_PROPERTY: "/crm/properties/new",
+	CRM_PROPERTY_DETAILS: (id: number | string) => `/crm/properties/${id}`,
+	CRM_USERS: "/crm/users",
 	PROPERTY_DETAILS: (slug: string) => `/properties/${slug}`,
 } as const;

@@ -1,24 +1,11 @@
 import React from 'react';
 import {Container} from "@/components/layout/Container";
-import {prisma} from "@/lib/prisma";
 import Image from "next/image";
 import {MessageSquareQuote, Star} from "lucide-react";
+import { getLatestReviews } from "@/lib/queries/reviews";
 
 const ReviewSection = async () => {
-	const reviews = await prisma.review.findMany({
-		include: {
-			user: {
-				select: {
-					id: true,
-					name: true,
-					avatar: true,
-				},
-			},
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-	});
+	const reviews = await getLatestReviews();
 	return (
 		<section>
 			<Container>
@@ -38,7 +25,7 @@ const ReviewSection = async () => {
 										 className="relative rounded-2xl bg-bg-secondary/20 p-5 border border-secondary/10 shadow-sm ring-1 ring-black/5">
 									<MessageSquareQuote size={40} className="text-secondary/50 absolute top-4 right-4"/>
 									<div className="flex">
-										<Image src={review.user.avatar || ""} alt="Фото профілю" width={80} height={80}
+										<Image src={review.user.avatar || "/images/avatar.jpg"} alt="Фото профілю" width={80} height={80}
 													 className="rounded-full"></Image>
 										<div className="mt-2 items-center ml-2">
 											<span className="text-primary">{review.user.name}</span>

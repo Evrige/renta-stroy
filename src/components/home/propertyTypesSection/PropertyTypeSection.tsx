@@ -1,9 +1,9 @@
 import React from "react";
 import { Container } from "@/components/layout/Container";
-import { prisma } from "@/lib/prisma";
 import PropertyTypeItem from "@/components/home/propertyTypesSection/PropertyTypeItem";
 import { formatCount } from "@/app/utils/formatCount";
 import { ROUTES } from "@/lib/constants/routes";
+import { getPropertyTypeCounts } from "@/lib/queries/properties";
 
 const propertyTypeCards = [
 	{
@@ -45,12 +45,7 @@ const propertyTypeCards = [
 ] as const;
 
 const PropertyTypeSection = async () => {
-	const propertyTypesCount = await prisma.property.groupBy({
-		by: ["propertyType"],
-		_count: {
-			propertyType: true,
-		},
-	});
+	const propertyTypesCount = await getPropertyTypeCounts();
 
 	const countsMap = Object.fromEntries(
 		propertyTypesCount.map((item) => [item.propertyType, item._count.propertyType])

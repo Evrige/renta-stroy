@@ -6,7 +6,7 @@ import {ROUTES} from "@/lib/constants/routes";
 
 const Footer = () => {
 	return (
-		<footer className="bg-primary text-white mt-20">
+		<footer className="bg-primary text-white">
 			<Container className="py-12">
 
 				<div className="grid grid-cols-1 md:grid-cols-4 gap-8">

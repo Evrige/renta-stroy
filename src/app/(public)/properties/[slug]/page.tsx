@@ -4,21 +4,13 @@ import {notFound} from "next/navigation";
 import {formatDate, formatListingType, formatPrice, formatRentPeriod} from "@/app/utils/formatters";
 import PropertyGallery from "@/components/home/PropertyGallery";
 import {Container} from "@/components/layout/Container";
-import {prisma} from "@/lib/prisma";
 import BackButton from "@/components/buttons/BackButton";
+import { getPropertyBySlug } from "@/lib/queries/properties";
 
 const Page = async ({params}: { params: Promise<{ slug: string }> }) => {
 	const {slug} = await params;
 
-	const property = await prisma.property.findUnique({
-		where: {
-			slug,
-		},
-		include: {
-			location: true,
-			images: true,
-		},
-	});
+	const property = await getPropertyBySlug(slug);
 
 	if (!property) {
 		notFound();

@@ -1,7 +1,7 @@
 // 🔥 Универсальный файл для форматирования enum → текст
 
 // ================= USER =================
-import {Decimal} from "@prisma/client-runtime-utils";
+import type { Decimal } from "@prisma/client-runtime-utils";
 
 export const formatUserRole = (role: string) => {
 	switch (role) {
@@ -77,6 +77,23 @@ export const formatPropertyStatus = (status: string) => {
 	}
 };
 
+export const formatPropertyApprovalStatus = (status: string) => {
+	switch (status) {
+		case "DRAFT":
+			return "Чернетка";
+		case "PENDING_REVIEW":
+			return "На модерації";
+		case "NEEDS_REVISION":
+			return "Потрібне доопрацювання";
+		case "APPROVED":
+			return "Опубліковано";
+		case "REJECTED":
+			return "Відхилено";
+		default:
+			return status;
+	}
+};
+
 // ================= REQUEST =================
 export const formatRequestType = (type: string) => {
 	switch (type) {
@@ -137,7 +154,7 @@ export const formatTransactionStatus = (status: string) => {
 	}
 };
 
-export const formatPrice = (price: Decimal) => Number(price).toLocaleString("uk-UA")
+export const formatPrice = (price: Decimal) => Number(price).toLocaleString("uk-UA");
 
 export const formatDate = (date: Date | string) => {
 	const formatted = new Intl.DateTimeFormat("uk-UA", {

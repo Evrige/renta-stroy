@@ -29,7 +29,7 @@ const Page = () => {
 				<div className="p-6 border rounded-xl">
 					<h3 className="font-medium text-lg mb-2 text-primary">Що ми робимо</h3>
 					<p className="text-gray-600 text-sm">
-						Об'єднуємо орендодавців і покупців в одному зручному сервісі.
+						Об&apos;єднуємо орендодавців і покупців в одному зручному сервісі.
 					</p>
 				</div>
 

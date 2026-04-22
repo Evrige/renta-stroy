@@ -31,6 +31,14 @@ enum PropertyStatus {
   INACTIVE
 }
 
+enum PropertyApprovalStatus {
+  DRAFT
+  PENDING_REVIEW
+  NEEDS_REVISION
+  APPROVED
+  REJECTED
+}
+
 enum RequestType {
   BUY
   RENT
@@ -71,9 +79,9 @@ model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
-  password  String
+  passwordHash String
   phone     String?  @db.VarChar(30)
-  avatar    String?
+  avatar    String   @default("/images/avatar.jpg")
   role      UserRole @default(USER)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -89,6 +97,28 @@ model User {
 
   buyerTransactions  Transaction[] @relation("BuyerTransactions")
   sellerTransactions Transaction[] @relation("SellerTransactions")
+  authSessions       AuthSession[]
+  ownedProperties    Property[]    @relation("OwnedProperties")
+  createdProperties  Property[]    @relation("CreatedProperties")
+  reviewedProperties Property[]    @relation("ReviewedProperties")
+}
+
+model AuthSession {
+  id         String   @id
+  tokenHash  String   @unique
+  userAgent  String?  @db.VarChar(512)
+  ipAddress  String?  @db.VarChar(64)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
 }
 
 model Property {
@@ -108,14 +138,24 @@ model Property {
   parking      Boolean        @default(false)
   furnished    Boolean        @default(false)
   status       PropertyStatus @default(AVAILABLE)
+  approvalStatus PropertyApprovalStatus @default(APPROVED)
+  moderationNotes String?
+  publishedAt  DateTime?
+  reviewedAt   DateTime?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
-  managerId  Int?
-  locationId Int
+  managerId   Int?
+  locationId  Int
+  ownerId     Int?
+  createdById Int?
+  reviewedById Int?
 
-  manager  User?    @relation("ManagerProperties", fields: [managerId], references: [id], onDelete: SetNull)
-  location Location @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  manager    User?    @relation("ManagerProperties", fields: [managerId], references: [id], onDelete: SetNull)
+  owner      User?    @relation("OwnedProperties", fields: [ownerId], references: [id], onDelete: SetNull)
+  createdBy  User?    @relation("CreatedProperties", fields: [createdById], references: [id], onDelete: SetNull)
+  reviewedBy User?    @relation("ReviewedProperties", fields: [reviewedById], references: [id], onDelete: SetNull)
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Restrict)
 
   images       PropertyImage[]
   requests     Request[]
@@ -127,8 +167,12 @@ model Property {
   @@index([propertyType])
   @@index([rentPeriod])
   @@index([status])
+  @@index([approvalStatus])
   @@index([managerId])
   @@index([locationId])
+  @@index([ownerId])
+  @@index([createdById])
+  @@index([reviewedById])
   @@index([price])
   @@index([rooms])
   @@index([createdAt])

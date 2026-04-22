@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-
-const inter = Inter({
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Рента Строй",
@@ -20,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.className} font-sans`}>
+    <html lang="uk" className="font-sans">
     <body className="antialiased mt-24">
     <Header />
     {children}
@@ -29,4 +23,3 @@ export default function RootLayout({
     </html>
   );
 }
-

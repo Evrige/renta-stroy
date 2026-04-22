@@ -2,8 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { BedDouble, Heart, LandPlot, SquareArrowOutUpRight, SquaresExclude } from "lucide-react";
 import { ListingType, PropertyType } from "@/generated/prisma/client";
-import type { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
 import { Container } from "@/components/layout/Container";
 import { ROUTES } from "@/lib/constants/routes";
 import { getRoomsLabel } from "@/app/utils/getRoomsLabel";
@@ -13,6 +11,8 @@ import {
 	formatPropertyType,
 	formatRentPeriod,
 } from "@/app/utils/formatters";
+import { getCities } from "@/lib/queries/locations";
+import { getFilteredProperties } from "@/lib/queries/properties";
 
 const listingTypeOptions = [
 	{ value: ListingType.SALE, label: "Продаж" },
@@ -62,67 +62,16 @@ const Page = async ({ searchParams }: PropertiesPageProps) => {
 	const maxPrice = parsePositiveNumber(params.maxPrice);
 	const city = params.city?.trim() || undefined;
 
-	const where: Prisma.PropertyWhereInput = {
-		status: "AVAILABLE",
-		...(selectedListingType && { listingType: selectedListingType }),
-		...(selectedPropertyType && { propertyType: selectedPropertyType }),
-		...(selectedRooms && { rooms: selectedRooms }),
-		...((minPrice || maxPrice) && {
-			price: {
-				...(minPrice && { gte: minPrice }),
-				...(maxPrice && { lte: maxPrice }),
-			},
-		}),
-		...(city && {
-			location: {
-				city,
-			},
-		}),
-	};
-
 	const [properties, cities] = await Promise.all([
-		prisma.property.findMany({
-			where,
-			select: {
-				id: true,
-				slug: true,
-				title: true,
-				price: true,
-				listingType: true,
-				propertyType: true,
-				area: true,
-				rooms: true,
-				rentPeriod: true,
-				location: {
-					select: {
-						city: true,
-						district: true,
-					},
-				},
-				images: {
-					where: {
-						isMain: true,
-					},
-					select: {
-						url: true,
-						alt: true,
-					},
-					take: 1,
-				},
-			},
-			orderBy: {
-				createdAt: "desc",
-			},
+		getFilteredProperties({
+			city,
+			listingType: selectedListingType,
+			propertyType: selectedPropertyType,
+			rooms: selectedRooms,
+			minPrice,
+			maxPrice,
 		}),
-		prisma.location.findMany({
-			select: {
-				city: true,
-			},
-			distinct: ["city"],
-			orderBy: {
-				city: "asc",
-			},
-		}),
+		getCities(),
 	]);
 
 	return (
