@@ -8,6 +8,7 @@ import {
 	formatPropertyType,
 } from "@/app/utils/formatters";
 import { Container } from "@/components/layout/Container";
+import { PageHeading } from "@/components/layout/PageHeading";
 import { requireRole } from "@/lib/auth";
 import { ROUTES } from "@/lib/constants/routes";
 import { getCrmDashboardData } from "@/lib/queries/crm";
@@ -46,21 +47,14 @@ export default async function CrmDashboardPage() {
 	return (
 		<section className="py-12">
 			<Container className="space-y-8">
-				<div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-					<div className="max-w-3xl">
-						<p className="text-sm font-semibold uppercase tracking-[0.3em] text-secondary">
-							CRM панель
-						</p>
-						<h1 className="mt-4 text-4xl font-semibold text-primary">
-							Керуйте оголошеннями, модерацією та робочим потоком команди
-						</h1>
-						<p className="mt-4 text-base leading-7 text-secondary">
-							Тут менеджери та адміністратори обробляють нові заявки на публікацію,
-							редагують картки об&apos;єктів та контролюють поточний стан каталогу.
-						</p>
-					</div>
-
-					<div className="flex flex-wrap gap-3">
+				<PageHeading
+					eyebrow="CRM панель"
+					title="Керуйте оголошеннями, модерацією та робочим потоком команди"
+					description="Тут менеджери та адміністратори обробляють нові заявки на публікацію, редагують картки об'єктів та контролюють поточний стан каталогу."
+					backHref={ROUTES.ACCOUNT}
+					backLabel="До кабінету"
+					actions={
+						<>
 						<Link
 							href={ROUTES.CRM_NEW_PROPERTY}
 							className="rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
@@ -75,8 +69,9 @@ export default async function CrmDashboardPage() {
 								Користувачі
 							</Link>
 						) : null}
-					</div>
-				</div>
+						</>
+					}
+				/>
 
 				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 					{summaryCards.map((card) => (

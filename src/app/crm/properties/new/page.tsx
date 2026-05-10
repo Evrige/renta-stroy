@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { UserRole } from "@/generated/prisma/client";
 import { PropertyForm } from "@/components/crm/PropertyForm";
 import { Container } from "@/components/layout/Container";
+import { PageHeading } from "@/components/layout/PageHeading";
 import { requireRole } from "@/lib/auth";
 import { ROUTES } from "@/lib/constants/routes";
 
@@ -15,18 +16,13 @@ export default async function NewCrmPropertyPage() {
 	return (
 		<section className="py-12">
 			<Container className="space-y-8">
-				<div className="max-w-3xl">
-					<p className="text-sm font-semibold uppercase tracking-[0.28em] text-secondary">
-						CRM
-					</p>
-					<h1 className="mt-4 text-4xl font-semibold text-primary">
-						Створення нового оголошення
-					</h1>
-					<p className="mt-4 text-base leading-7 text-secondary">
-						Менеджер або адміністратор може одразу підготувати повноцінну картку об&apos;єкта
-						для публікації на сайті.
-					</p>
-				</div>
+				<PageHeading
+					eyebrow="CRM"
+					title="Створення нового оголошення"
+					description="Менеджер або адміністратор може одразу підготувати повноцінну картку об'єкта для публікації на сайті."
+					backHref={ROUTES.CRM}
+					backLabel="До CRM"
+				/>
 
 				<PropertyForm
 					mode="crm-create"

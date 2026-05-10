@@ -7,6 +7,7 @@ import {
 import { PropertyForm } from "@/components/crm/PropertyForm";
 import { PropertyModerationPanel } from "@/components/crm/PropertyModerationPanel";
 import { Container } from "@/components/layout/Container";
+import { PageHeading } from "@/components/layout/PageHeading";
 import { requireRole } from "@/lib/auth";
 import { ROUTES } from "@/lib/constants/routes";
 import { getCrmPropertyById } from "@/lib/queries/crm";
@@ -41,12 +42,16 @@ export default async function CrmPropertyDetailsPage({ params }: PageProps) {
 	return (
 		<section className="py-12">
 			<Container className="space-y-8">
+				<PageHeading
+					eyebrow="CRM картка оголошення"
+					title={property.title}
+					description="Переглядайте повну картку, редагуйте дані об'єкта та керуйте його статусом модерації."
+					backHref={ROUTES.CRM}
+					backLabel="До CRM"
+				/>
+
 				<div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
 					<div className="space-y-4">
-						<p className="text-sm font-semibold uppercase tracking-[0.28em] text-secondary">
-							CRM картка оголошення
-						</p>
-						<h1 className="text-4xl font-semibold text-primary">{property.title}</h1>
 						<div className="flex flex-wrap gap-3 text-sm text-secondary">
 							<span>{formatPropertyApprovalStatus(property.approvalStatus)}</span>
 							<span>Створено {formatDate(property.createdAt)}</span>

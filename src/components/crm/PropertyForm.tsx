@@ -181,7 +181,7 @@ export function PropertyForm({
 			});
 
 			const result = (await response.json().catch(() => null)) as
-				| { message?: string }
+				| { message?: string; property?: { id?: number | string } }
 				| null;
 
 			if (!response.ok) {
@@ -190,8 +190,13 @@ export function PropertyForm({
 			}
 
 			setSuccess(result?.message ?? successMessage);
+			const redirectHref =
+				mode === "crm-create" && result?.property?.id
+					? ROUTES.CRM_PROPERTY_DETAILS(result.property.id)
+					: successHref;
+
 			startTransition(() => {
-				router.replace(successHref);
+				router.replace(redirectHref);
 				router.refresh();
 			});
 		} catch (validationError) {

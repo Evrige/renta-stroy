@@ -12,6 +12,11 @@ type PropertyFilters = {
 	maxPrice?: number;
 };
 
+type PropertyPagination = {
+	page?: number;
+	perPage?: number;
+};
+
 export const getFeaturedProperties = async () => {
 	return prisma.property.findMany({
 		where: {
@@ -85,40 +90,63 @@ const buildPropertiesWhere = ({
 	}),
 });
 
-export const getFilteredProperties = async (filters: PropertyFilters) => {
-	return prisma.property.findMany({
-		where: buildPropertiesWhere(filters),
-		select: {
-			id: true,
-			slug: true,
-			title: true,
-			price: true,
-			listingType: true,
-			propertyType: true,
-			area: true,
-			rooms: true,
-			rentPeriod: true,
-			location: {
-				select: {
-					city: true,
-					district: true,
-				},
-			},
-			images: {
-				where: {
-					isMain: true,
-				},
-				select: {
-					url: true,
-					alt: true,
-				},
-				take: 1,
-			},
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-	});
+export const getFilteredProperties = async (
+	filters: PropertyFilters,
+	pagination: PropertyPagination = {},
+) => {
+	const where = buildPropertiesWhere(filters);
+	const perPage = pagination.perPage ?? 12;
+	const requestedPage = Math.max(1, pagination.page ?? 1);
+	const totalCount = await prisma.property.count({ where });
+	const totalPages = totalCount > 0 ? Math.ceil(totalCount / perPage) : 0;
+	const currentPage = totalPages > 0 ? Math.min(requestedPage, totalPages) : 1;
+
+	const properties =
+		totalCount > 0
+			? await prisma.property.findMany({
+					where,
+					select: {
+						id: true,
+						slug: true,
+						title: true,
+						price: true,
+						listingType: true,
+						propertyType: true,
+						area: true,
+						rooms: true,
+						rentPeriod: true,
+						location: {
+							select: {
+								city: true,
+								district: true,
+							},
+						},
+						images: {
+							where: {
+								isMain: true,
+							},
+							select: {
+								url: true,
+								alt: true,
+							},
+							take: 1,
+						},
+					},
+					orderBy: {
+						createdAt: "desc",
+					},
+					skip: (currentPage - 1) * perPage,
+					take: perPage,
+				})
+			: [];
+
+	return {
+		properties,
+		totalCount,
+		totalPages,
+		currentPage,
+		perPage,
+	};
 };
 
 export const getPropertyBySlug = async (slug: string) => {
