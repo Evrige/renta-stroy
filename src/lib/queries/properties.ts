@@ -51,6 +51,34 @@ export const getFeaturedProperties = async () => {
 	});
 };
 
+const propertyCardSelect = {
+	id: true,
+	slug: true,
+	title: true,
+	price: true,
+	listingType: true,
+	propertyType: true,
+	area: true,
+	rooms: true,
+	rentPeriod: true,
+	location: {
+		select: {
+			city: true,
+			district: true,
+		},
+	},
+	images: {
+		where: {
+			isMain: true,
+		},
+		select: {
+			url: true,
+			alt: true,
+		},
+		take: 1,
+	},
+} satisfies Prisma.PropertySelect;
+
 export const getPropertyTypeCounts = async () => {
 	return prisma.property.groupBy({
 		by: ["propertyType"],
@@ -105,33 +133,7 @@ export const getFilteredProperties = async (
 		totalCount > 0
 			? await prisma.property.findMany({
 					where,
-					select: {
-						id: true,
-						slug: true,
-						title: true,
-						price: true,
-						listingType: true,
-						propertyType: true,
-						area: true,
-						rooms: true,
-						rentPeriod: true,
-						location: {
-							select: {
-								city: true,
-								district: true,
-							},
-						},
-						images: {
-							where: {
-								isMain: true,
-							},
-							select: {
-								url: true,
-								alt: true,
-							},
-							take: 1,
-						},
-					},
+					select: propertyCardSelect,
 					orderBy: {
 						createdAt: "desc",
 					},
@@ -148,6 +150,48 @@ export const getFilteredProperties = async (
 		perPage,
 	};
 };
+
+export async function getFavoritePropertyIds(userId: number, propertyIds: number[]) {
+	if (!propertyIds.length) {
+		return [];
+	}
+
+	const favorites = await prisma.favorite.findMany({
+		where: {
+			userId,
+			propertyId: {
+				in: propertyIds,
+			},
+		},
+		select: {
+			propertyId: true,
+		},
+	});
+
+	return favorites.map((favorite) => favorite.propertyId);
+}
+
+export async function getUserFavoriteProperties(userId: number) {
+	const favorites = await prisma.favorite.findMany({
+		where: {
+			userId,
+			property: {
+				approvalStatus: PropertyApprovalStatus.APPROVED,
+				status: "AVAILABLE",
+			},
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+		select: {
+			property: {
+				select: propertyCardSelect,
+			},
+		},
+	});
+
+	return favorites.map((favorite) => favorite.property);
+}
 
 export const getPropertyBySlug = async (slug: string) => {
 	return prisma.property.findFirst({

@@ -5,11 +5,14 @@ import {
 	formatDate,
 	formatPrice,
 	formatPropertyApprovalStatus,
+	formatPropertyType,
 } from "@/app/utils/formatters";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { Container } from "@/components/layout/Container";
 import { requireCurrentUser } from "@/lib/auth";
 import { ROUTES } from "@/lib/constants/routes";
 import { getUserOwnedProperties } from "@/lib/queries/crm";
+import { getUserFavoriteProperties } from "@/lib/queries/properties";
 
 export const metadata: Metadata = {
 	title: "Кабінет | Renta Stroy",
@@ -17,7 +20,10 @@ export const metadata: Metadata = {
 
 export default async function AccountPage() {
 	const user = await requireCurrentUser();
-	const ownProperties = await getUserOwnedProperties(user.id);
+	const [ownProperties, favoriteProperties] = await Promise.all([
+		getUserOwnedProperties(user.id),
+		getUserFavoriteProperties(user.id),
+	]);
 
 	return (
 		<section className="py-12">
@@ -75,6 +81,66 @@ export default async function AccountPage() {
 								</Link>
 							) : null}
 						</div>
+					</div>
+				</div>
+
+				<div className="rounded-[28px] border border-black/10 bg-white p-7">
+					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div>
+							<h2 className="text-2xl font-semibold text-primary">Обране</h2>
+							<p className="mt-2 text-sm text-secondary">
+								Збережені оголошення, до яких ви хочете швидко повертатися.
+							</p>
+						</div>
+						<p className="text-sm font-semibold text-primary">
+							{favoriteProperties.length} збережено
+						</p>
+					</div>
+
+					<div className="mt-6 space-y-4">
+						{favoriteProperties.length ? (
+							favoriteProperties.map((property) => (
+								<div
+									key={property.id}
+									className="rounded-2xl border border-black/8 bg-bg-secondary/35 p-4"
+								>
+									<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+										<div>
+											<Link
+												href={ROUTES.PROPERTY_DETAILS(property.slug)}
+												className="text-lg font-semibold text-primary transition hover:opacity-75"
+											>
+												{property.title}
+											</Link>
+											<p className="mt-1 text-sm text-secondary">
+												{property.location.city}
+												{property.location.district ? `, ${property.location.district}` : ""}
+											</p>
+											<p className="mt-2 text-sm text-secondary">
+												{formatPropertyType(property.propertyType)}
+											</p>
+										</div>
+
+										<div className="flex flex-col gap-3 lg:items-end">
+											<p className="text-sm font-semibold text-primary">
+												{formatPrice(property.price)} грн
+											</p>
+											<FavoriteButton
+												propertyId={property.id}
+												initialIsFavorite
+												isAuthenticated
+												variant="action"
+												className="w-full lg:w-[240px]"
+											/>
+										</div>
+									</div>
+								</div>
+							))
+						) : (
+							<div className="rounded-2xl border border-dashed border-black/10 px-4 py-8 text-center text-sm text-secondary">
+								У вас поки немає обраних оголошень.
+							</div>
+						)}
 					</div>
 				</div>
 

@@ -1,26 +1,15 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
-	BedDouble,
 	ChevronLeft,
 	ChevronRight,
-	Heart,
-	LandPlot,
-	SquareArrowOutUpRight,
-	SquaresExclude,
 } from "lucide-react";
 import { ListingType, PropertyType } from "@/generated/prisma/client";
 import { Container } from "@/components/layout/Container";
+import { PropertyCard } from "@/components/properties/PropertyCard";
+import { getCurrentUser } from "@/lib/auth";
 import { ROUTES } from "@/lib/constants/routes";
-import { getRoomsLabel } from "@/app/utils/getRoomsLabel";
-import {
-	formatListingType,
-	formatPrice,
-	formatPropertyType,
-	formatRentPeriod,
-} from "@/app/utils/formatters";
 import { getCities } from "@/lib/queries/locations";
-import { getFilteredProperties } from "@/lib/queries/properties";
+import { getFavoritePropertyIds, getFilteredProperties } from "@/lib/queries/properties";
 
 const listingTypeOptions = [
 	{ value: ListingType.SALE, label: "Продаж" },
@@ -116,7 +105,8 @@ const Page = async ({ searchParams }: PropertiesPageProps) => {
 	const city = params.city?.trim() || undefined;
 	const requestedPage = parsePositiveInteger(params.page) ?? 1;
 
-	const [{ properties, totalCount, totalPages, currentPage, perPage }, cities] = await Promise.all([
+	const [currentUser, { properties, totalCount, totalPages, currentPage, perPage }, cities] = await Promise.all([
+		getCurrentUser(),
 		getFilteredProperties({
 			city,
 			listingType: selectedListingType,
@@ -130,6 +120,14 @@ const Page = async ({ searchParams }: PropertiesPageProps) => {
 		}),
 		getCities(),
 	]);
+
+	const favoritePropertyIds = currentUser
+		? await getFavoritePropertyIds(
+				currentUser.id,
+				properties.map((property) => property.id),
+			)
+		: [];
+	const favoritePropertyIdSet = new Set(favoritePropertyIds);
 
 	const buildPageHref = (page: number) => {
 		const query = new URLSearchParams();
@@ -315,66 +313,12 @@ const Page = async ({ searchParams }: PropertiesPageProps) => {
 				<>
 					<div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 						{properties.map((property) => (
-							<Link
+							<PropertyCard
 								key={property.id}
-								href={ROUTES.PROPERTY_DETAILS(property.slug)}
-								className="h-full"
-							>
-								<div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-black/8 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-									<div className="relative h-56 w-full">
-										<Image
-											src={property.images[0]?.url || "/images/test.png"}
-											width={400}
-											height={224}
-											alt={property.images[0]?.alt || property.title}
-											className="h-full w-full object-cover"
-										/>
-										<p className="absolute left-4 top-4 rounded-xl bg-white px-3 py-1 text-sm font-semibold text-primary shadow-sm">
-											{formatPrice(property.price)} грн
-										</p>
-									</div>
-
-									<div className="flex flex-1 flex-col px-4 pb-4 pt-3">
-										<div className="mb-3">
-											<h2 className="line-clamp-2 min-h-[56px] text-lg font-semibold text-primary">
-												{property.title}
-											</h2>
-											<p className="mt-2 text-sm text-secondary">
-												{property.location.city}
-												{property.location.district ? `, ${property.location.district}` : ""}
-											</p>
-										</div>
-
-										<div className="mb-4 flex gap-4 border-b border-gray-200 pb-4 text-sm text-primary">
-											<div className="flex items-center gap-1">
-												<BedDouble size={18} color="#181a20" />
-												<span>{property.rooms ?? 0} {getRoomsLabel(property.rooms || 0)}</span>
-											</div>
-											<div className="flex items-center gap-1">
-												<LandPlot size={18} color="#181a20" />
-												<span>{property.area.toString()} m<sup>2</sup></span>
-											</div>
-										</div>
-
-										<div className="mt-auto flex items-center justify-between text-sm text-secondary">
-											<div className="flex flex-col gap-1">
-												<span>{formatPropertyType(property.propertyType)}</span>
-												<span>
-													{property.listingType === "RENT"
-														? formatRentPeriod(property.rentPeriod)
-														: formatListingType(property.listingType)}
-												</span>
-											</div>
-
-											<div className="flex gap-3">
-												<SquareArrowOutUpRight size={18} color="#181a20" />
-												<Heart size={18} color="#181a20" />
-												<SquaresExclude size={18} color="#181a20" />
-											</div>
-										</div>
-									</div>
-								</div>
-							</Link>
+								property={property}
+								isFavorite={favoritePropertyIdSet.has(property.id)}
+								isAuthenticated={Boolean(currentUser)}
+							/>
 						))}
 					</div>
 

@@ -2,10 +2,12 @@ import {Armchair, Bath, BedDouble, Building2, Calendar, CarFront, MapPin, Ruler}
 import {notFound} from "next/navigation";
 
 import {formatDate, formatListingType, formatPrice, formatRentPeriod} from "@/app/utils/formatters";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import PropertyGallery from "@/components/home/PropertyGallery";
 import {Container} from "@/components/layout/Container";
 import BackButton from "@/components/buttons/BackButton";
-import { getPropertyBySlug } from "@/lib/queries/properties";
+import { getCurrentUser } from "@/lib/auth";
+import { getFavoritePropertyIds, getPropertyBySlug } from "@/lib/queries/properties";
 
 const Page = async ({params}: { params: Promise<{ slug: string }> }) => {
 	const {slug} = await params;
@@ -15,6 +17,12 @@ const Page = async ({params}: { params: Promise<{ slug: string }> }) => {
 	if (!property) {
 		notFound();
 	}
+
+	const currentUser = await getCurrentUser();
+	const favoritePropertyIds = currentUser
+		? await getFavoritePropertyIds(currentUser.id, [property.id])
+		: [];
+	const isFavorite = favoritePropertyIds.includes(property.id);
 
 	const latitude = property.location.latitude ? Number(property.location.latitude) : null;
 	const longitude = property.location.longitude ? Number(property.location.longitude) : null;
@@ -173,6 +181,12 @@ const Page = async ({params}: { params: Promise<{ slug: string }> }) => {
 									className="w-full rounded-2xl bg-primary px-5 py-4 text-sm font-semibold text-white transition hover:opacity-92">
 									{property.rentPeriod ? "Залишити заявку на оренду" : "Записатися на перегляд"}
 								</button>
+								<FavoriteButton
+									propertyId={property.id}
+									initialIsFavorite={isFavorite}
+									isAuthenticated={Boolean(currentUser)}
+									variant="action"
+								/>
 								<button
 									className="w-full rounded-2xl border border-gray-300 bg-white px-5 py-4 text-sm font-semibold text-primary transition hover:border-gray-400">
 									Зв&apos;язатися з менеджером
